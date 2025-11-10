@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
 import companyService from '../services/companyService';
 
@@ -207,7 +207,7 @@ const CompanyRegister = () => {
         )}
         
         <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
-          Already have an account? <a href="/login" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Login here</a>
+          Already have an account? <Link to="/login" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Login here</Link>
         </p>
       </div>
     </div>

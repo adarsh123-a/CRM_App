@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
 
 const Login = () => {
@@ -79,11 +79,11 @@ const Login = () => {
         </form>
         
         <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
-          Don't have an account? <a href="/register" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Register here</a>
+          Don't have an account? <Link to="/register" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Register here</Link>
         </p>
         
         <p className="text-center mt-2 text-gray-600 dark:text-gray-400">
-          Registering for a company? <a href="/company-register" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Company Registration</a>
+          Registering for a company? <Link to="/company-register" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Company Registration</Link>
         </p>
       </div>
     </div>
