@@ -10,7 +10,7 @@ const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10");
 
 async function register(req, res) {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, companyId } = req.body;
     if (!email || !password)
       return res.status(400).json({ error: "Email and password required" });
 
@@ -20,21 +20,41 @@ async function register(req, res) {
       ? roleNormalized
       : "SALES_EXECUTIVE";
 
+    // Validate company ID if provided
+    if (companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+      });
+
+      if (!company) {
+        return res.status(400).json({ error: "Invalid company ID" });
+      }
+    }
+
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
+    const userData = {
+      email: email.toLowerCase(),
+      passwordHash,
+      name,
+      role: assignedRole,
+    };
+
+    // Add company ID if provided
+    if (companyId) {
+      userData.companyId = companyId;
+    }
+
     const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase(),
-        passwordHash,
-        name,
-        role: assignedRole,
-      },
+      data: userData,
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
         createdAt: true,
+        companyId: true,
+        company: true,
       },
     });
 
@@ -65,6 +85,9 @@ async function login(req, res) {
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
+      include: {
+        company: true,
+      },
     });
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
@@ -91,6 +114,7 @@ async function login(req, res) {
         email: user.email,
         name: user.name,
         role: user.role,
+        companyId: user.companyId,
       },
     });
   } catch (err) {

@@ -7,12 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  size      Int
+  users     User[]   @relation("CompanyUsers")
+}
+
 model User {
   name          String?
   email         String         @unique
   role          Role           @default(SALES_EXECUTIVE)
   createdAt     DateTime       @default(now())
   passwordHash  String
+  companyId     Int?
+  company       Company?       @relation("CompanyUsers", fields: [companyId], references: [id])
   id            Int            @id @default(autoincrement())
   leads         Lead[]         @relation("OwnerLeads")
   leadHistories LeadHistory[]  @relation("ChangedByHistories")
@@ -38,6 +47,9 @@ model Lead {
   updatedAt     DateTime      @updatedAt
   email         String?
   phone         String?
+  customer      String?       // New field for customer
+  contactPerson String?       // New field for contact person
+  contactNumber String?       // New field for contact number
   owner         User          @relation("OwnerLeads", fields: [ownerId], references: [id])
   leadHistories LeadHistory[]
 }
@@ -48,6 +60,8 @@ model LeadHistory {
   changedById Int
   oldStatus   LeadStatus
   newStatus   LeadStatus
+  notes       String?    // Existing field for notes
+  meetingDetails String? // New field for meeting details
   changedAt   DateTime   @default(now())
   changedBy   User       @relation("ChangedByHistories", fields: [changedById], references: [id])
   lead        Lead       @relation(fields: [leadId], references: [id])
