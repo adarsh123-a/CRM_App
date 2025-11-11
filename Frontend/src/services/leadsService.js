@@ -51,6 +51,16 @@ class LeadsService {
     }
   }
 
+  // Fetch dashboard metrics
+  async getDashboardMetrics() {
+    try {
+      const response = await api.get("/leads/dashboard/metrics");
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Handle API errors
   handleError(error) {
     if (error.response) {

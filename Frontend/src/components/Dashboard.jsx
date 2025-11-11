@@ -2,9 +2,12 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import leadsService from '../services/leadsService';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [metrics, setMetrics] = useState({ leadCount: 0, customerCount: 0, revenue: 0 });
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,7 +20,21 @@ const Dashboard = () => {
     // Get current user
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
+    
+    // Fetch dashboard metrics
+    fetchDashboardMetrics();
   }, [navigate]);
+
+  const fetchDashboardMetrics = async () => {
+    try {
+      const data = await leadsService.getDashboardMetrics();
+      setMetrics(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching dashboard metrics:', error);
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     authService.logout();
@@ -49,20 +66,24 @@ const Dashboard = () => {
           <p className="text-gray-600 dark:text-gray-400">You have successfully logged in!</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
-            <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Leads</h3>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">24</p>
+        {loading ? (
+          <div className="text-center py-8">Loading metrics...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Leads</h3>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{metrics.leadCount}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Customers</h3>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{metrics.customerCount}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Revenue</h3>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">${metrics.revenue.toLocaleString()}</p>
+            </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
-            <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Customers</h3>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">12</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center relative">
-            <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Revenue</h3>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">$12,450</p>
-          </div>
-        </div>
+        )}
       </main>
     </>
   );
