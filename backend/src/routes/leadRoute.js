@@ -6,6 +6,7 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 
 router.use(authenticate);
 
+router.get("/dashboard/metrics", leadCtrl.getDashboardMetrics); // dashboard metrics
 router.post("/", leadCtrl.createLead); // create
 router.get("/", leadCtrl.getLeads); // list
 router.get("/:id", leadCtrl.getLeadById); // single lead + history

@@ -19,11 +19,9 @@ async function createLead(req, res) {
     if (ownerId && ownerId !== req.user.id) {
       // Only admins and managers can assign leads to other users
       if (req.user.role !== "ADMIN" && req.user.role !== "MANAGER") {
-        return res
-          .status(403)
-          .json({
-            error: "Only admins and managers can assign leads to other users",
-          });
+        return res.status(403).json({
+          error: "Only admins and managers can assign leads to other users",
+        });
       }
 
       // Check if the assigned user belongs to the same company as the current user
@@ -39,11 +37,9 @@ async function createLead(req, res) {
       // If either user doesn't belong to a company, they must be the same user
       if (!req.user.companyId || !assignedUser.companyId) {
         if (req.user.id !== ownerId) {
-          return res
-            .status(403)
-            .json({
-              error: "Cannot assign lead to user from different company",
-            });
+          return res.status(403).json({
+            error: "Cannot assign lead to user from different company",
+          });
         }
       } else if (req.user.companyId !== assignedUser.companyId) {
         return res
@@ -199,4 +195,50 @@ async function deleteLead(req, res) {
   }
 }
 
-module.exports = { createLead, getLeads, getLeadById, updateLead, deleteLead };
+// Get dashboard metrics
+async function getDashboardMetrics(req, res) {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    const userCompanyId = req.user.companyId;
+
+    // Get lead count
+    const leadCount = await prisma.lead.count({
+      where:
+        userRole === "SALES_EXECUTIVE"
+          ? { ownerId: userId }
+          : userCompanyId
+          ? { owner: { companyId: userCompanyId } }
+          : {},
+    });
+
+    // Get customer count (leads marked as customers)
+    const customerCount = await prisma.lead.count({
+      where: {
+        ...(userRole === "SALES_EXECUTIVE"
+          ? { ownerId: userId }
+          : userCompanyId
+          ? { owner: { companyId: userCompanyId } }
+          : {}),
+        customer: { not: null },
+      },
+    });
+
+    // Revenue is fixed at 0 as per requirements
+    const revenue = 0;
+
+    res.json({ leadCount, customerCount, revenue });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
+module.exports = {
+  createLead,
+  getLeads,
+  getLeadById,
+  updateLead,
+  deleteLead,
+  getDashboardMetrics,
+};
